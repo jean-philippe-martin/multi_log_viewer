@@ -1,0 +1,22 @@
+# Example multi-log viewer configuration
+health_poll_seconds: 2
+pattern_rescan_seconds: 5
+ring_buffer_lines: 2000
+
+services:
+  api:
+    logs:
+      - path: logs/api.log
+        line_pattern: "{timestamp:TIMESTAMP_ISO8601} {level:LOGLEVEL} "
+    health:
+      port: 65535
+    start: echo "start api"
+    stop: echo "stop api"
+
+  workers:
+    logs:
+      - path_pattern: "logs/{client}/log.txt"
+        label: "{client}"
+        line_pattern: "{timestamp:YYYY-MM-DD HH:mm:ss.SSS} [{worker}]"
+    health:
+      process_contains: "loggen"
