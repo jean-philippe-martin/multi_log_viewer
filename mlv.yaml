@@ -2,6 +2,7 @@
 health_poll_seconds: 2
 pattern_rescan_seconds: 5
 ring_buffer_lines: 2000
+theme: default
 
 services:
   api:

@@ -16,6 +16,7 @@ Paths in the config are resolved relative to the **project root** (see below), n
 | `health_poll_seconds` | number | `2` | How often to re-run health probes (seconds). |
 | `pattern_rescan_seconds` | number | `5` | How often to re-scan glob patterns for new or removed log files. |
 | `ring_buffer_lines` | integer | `2000` | Maximum lines kept in memory per log file. |
+| `theme` | string | `default` | UI color theme; loads `themes/<name>.yaml` under the project root (e.g. `default`, `vibrant`). |
 | `services` | mapping | *(required)* | Named services; keys become service IDs in the UI. |
 
 Example skeleton:
@@ -24,6 +25,7 @@ Example skeleton:
 health_poll_seconds: 2
 pattern_rescan_seconds: 5
 ring_buffer_lines: 2000
+theme: default
 
 services:
   api:

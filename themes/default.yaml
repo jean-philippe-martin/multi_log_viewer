@@ -1,0 +1,21 @@
+# Default multi-log viewer theme (matches the original hard-coded palette).
+
+log_text:
+  fg: "252"
+
+log_scroll_notice:
+  fg: grey
+
+left_text:
+  fg: "252"
+
+selected_left_text:
+  fg: "252"
+  bg: blue
+  bold: true
+
+border:
+  fg: green
+
+selected_top_border:
+  fg: green

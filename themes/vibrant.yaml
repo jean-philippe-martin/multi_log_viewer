@@ -1,0 +1,24 @@
+# Bright, bold theme for high-contrast terminals.
+
+log_text:
+  fg: bright-cyan
+  bold: true
+
+log_scroll_notice:
+  fg: bright-yellow
+  bold: true
+
+left_text:
+  fg: bright-green
+  bold: true
+
+selected_left_text:
+  fg: bright-white
+  bg: bright-blue
+  bold: true
+
+border:
+  fg: bright-magenta
+
+selected_top_border:
+  fg: bright-yellow

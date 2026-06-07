@@ -42,6 +42,10 @@ If the user presses ENTER on a line then the currently selected line (probably a
 
 If the user presses "+" then the currently selected line is shown *in addition* to the previously shown one(s). Then there will be two ">" symbols on the right. If they press "-" then the currently selected line will no longer be shown: it will be removed from the main panel and there won't be a ">" next to it anymore (if that was the last one then the main panel will be empty)
 
+## status line
+
+When left pane has focus, the status line mentions keys up/down, plus, enter, q, left/right, and ?
+
 ## main pane
 
 ### Showing log(s)
@@ -131,6 +135,14 @@ When the right pane has the focus, the user can press up/down or j/k to scroll u
 
 When the user starts to scroll, this pane no longer automatically scrolls when new lines are added in a log. Instead, the bottom line on the screen shows "Scroll to the bottom to resume auto-scroll.". When the user scrolls to the bottom, this text disappears and auto-scroll resumes.
 
+### status line
+
+When main pane has focus, the status line mentions keys up/down, PgUp/PgDn, Home/End, left/right, and ?.
+
+## status bar
+
+The status bar shows a selection of keys the user can press at the time. Also if a message needs to be displayed then it's shown there instead, until the user's next keypress.
+
 ## focus
 
 There is a concept of "focus" Initially the focus is on the left pane, on whichever row the user cursor is on.
@@ -139,6 +151,7 @@ For example here the focus is on the left pane, on "api" (indicated by the chevr
 Note that the focus is different from which log is being watched. In this example "log.txt" is being watched (indicated by the chevron to its right)
 
 ```
+=====================+
 >○  api              |
    - log.txt         >
  ● workers ▂         |
@@ -157,5 +170,95 @@ ASCII art representation (do not copy this literally):
 |      |            |
 |      |            |
 +------+------------+
+```
+
+When the focus is on the left then it's the left half that has the double lines at the top.
+```
++======+------------+
+|      |            |
+|      |            |
+|      |            |
+|      |            |
++------+------------+
+```
+
+We use a single vertical line to separate the two panels; it's not the case that each panel has its own rectangle.
+
+## themes
+
+There are multiple different "themes", meaning color choices for the style of the application. Each theme is a YAML file under `themes/` at the project root (for example `themes/default.yaml`). The config file can select one with `theme: default` (optional; defaults to `default`).
+
+Theme files set colors for these elements:
+
+- `log_text` — main pane log and service detail text
+- `log_scroll_notice` - main pane autoscroll notice at the bottom
+- `left_text` — sidebar rows
+- `selected_left_text` — highlighted sidebar row under the cursor
+- `border` — pane borders (unfocused, or non-top edges)
+- `selected_top_border` — top border of the pane that has focus
+
+### Color values
+
+Each element is either a **shorthand string** or a **`fg` / `bg` object**.
+
+**Shorthand**
+
+| Form | Meaning |
+|------|---------|
+| `"red on black"` | foreground `red`, background `black` |
+| `"#ccc"` or `"252"` | foreground only |
+| `"#ccc on none"` | foreground set, no background |
+
+**Object form** (use when you need `bold` or explicit fields):
+
+```yaml
+selected_left_text:
+  fg: white
+  bg: "#383838"
+  bold: true
+```
+
+**Accepted color tokens**
+
+- Hex: `#RGB` or `#RRGGBB`
+- xterm 256-color index: `0`–`255` (as a number or string, e.g. `252`)
+- ANSI names: `red`, `bright-white`, `black`, … (mapped to palette indices for the terminal)
+- Background omitted, or `none` / `transparent` / `default`: **no background color is applied**
+
+**Terminal notes:** colors require a capable terminal (`TERM` should be `xterm-256color` or similar). If `NO_COLOR` is set, colors are disabled. Some multiplexers (tmux, Zellij) need a 256-color or truecolor `TERM` to show palette indices like `252` correctly.
+
+Terminals do not support true transparency. Omitting the background means the app does not paint that cell, so the terminal’s own background (including a wallpaper, if configured) shows through. Regions with an explicit `bg` will cover the wallpaper.
+
+### Example
+
+```yaml
+log_text:
+  fg: "#d0d0d0"
+
+left_text:
+  fg: "252"
+
+selected_left_text:
+  fg: white
+  bg: "#383838"
+  bold: true
+
+border:
+  fg: "240"
+
+selected_top_border:
+  fg: "252"
+```
+
+A wallpaper-friendly variant might leave most backgrounds unset and rely on foreground and bold for emphasis:
+
+```yaml
+log_text: "#e0e0e0"
+left_text: "#cccccc"
+selected_left_text:
+  fg: white
+  bold: true
+border: "240"
+selected_top_border: "252"
 ```
 
