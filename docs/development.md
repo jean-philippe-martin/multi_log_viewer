@@ -1,26 +1,56 @@
 # development
 
-## Starting the project
+## Prerequisites
 
-First activate the .venv, then run `mlv`. 
+- Go 1.22+
+- Optional: `golangci-lint` (otherwise `run-tests.sh` runs it via `go run`)
 
-There is a `run-log-generators.sh` script. It will start writing test logs in the
-existing logs/ folder.
+## Build
 
-## Running tests
-
-run `./run-tests.sh` to run all tests. You can also run just a subset of the tests with various arguments. Here's the help text.
-
+```bash
+go build -o bin/mlv ./cmd/mlv
+go build -o bin/loggen ./cmd/loggen
 ```
- % ./run-tests.sh --help
-Usage: ./run-tests.sh [OPTIONS] [PYTEST_ARGS...]
 
-Options:
-  --only-fast           Unit tests only (skip integration and performance)
-  --only-integration    Textual TUI integration tests only
-  --only-perf           Performance / timing tests only (prints timing vs log)
-  -h, --help            Show this help
+Or install:
 
-Any other arguments are passed to pytest (e.g. -v, -q, -k, tests/test_foo.py).
-Use -- to pass flags to pytest that look like run-tests options:
+```bash
+go install ./cmd/mlv ./cmd/loggen
+```
+
+## Run
+
+From the project directory (so `./mlv.yaml` is found):
+
+```bash
+go run ./cmd/mlv
+# or: mlv --config /path/to/mlv.yaml
+```
+
+## Test logs
+
+```bash
+./run-log-generators.sh
+```
+
+Starts `loggen` on the sample `logs/` layout. Stop with Ctrl-C.
+
+Manual example:
+
+```bash
+go run ./cmd/loggen logs/api.log --interval 0.5 --timestamp-format iso8601
+```
+
+## Tests and lint
+
+```bash
+./run-tests.sh
+```
+
+Runs `go vet`, `go test ./...`, and `golangci-lint`.
+
+Pass extra arguments to `go test`:
+
+```bash
+./run-tests.sh -v -run TestLoadValid
 ```

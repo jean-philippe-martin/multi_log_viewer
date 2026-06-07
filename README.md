@@ -7,9 +7,43 @@ Service-centric TUI for tailing multiple log files, with health probes and start
 - Go development environment
 - Terminal with Unicode support
 
+## Build
+
+From the project root:
+
+```bash
+go build -o bin/mlv ./cmd/mlv
+go build -o bin/loggen ./cmd/loggen
+```
+
+## Run
+
+```
+./mlv.sh
+```
+
 ## Install
 
-(TBD)
+
+(then `mlv` works from any directory if `mlv.yaml` is in that directory):
+
+```bash
+cd /path/to/multi_log_viewer_go
+go install ./cmd/mlv ./cmd/loggen
+```
+
+Ensure `$(go env GOPATH)/bin` is on your PATH (often `~/go/bin`):
+
+```bash
+export PATH="$(go env GOPATH)/bin:$PATH"
+mlv
+```
+
+Custom config path:
+
+```bash
+./bin/mlv --config /path/to/mlv.yaml
+```
 
 ## Quick start
 
@@ -20,21 +54,20 @@ mkdir -p logs/acme logs/beta
 touch logs/api.log logs/acme/log.txt logs/beta/log.txt
 ```
 
-2. Generate fake logs:
+2. Generate fake logs (optional; in a second terminal):
 
 ```bash
 ./run-log-generators.sh
 # or manually:
-loggen logs/api.log --interval 0.5 --timestamp-format iso8601
-loggen logs/acme/log.txt --interval 0.7 --prefix "[acme] "
-loggen logs/beta/log.txt --interval 0.9 --prefix "[beta] "
+./bin/loggen logs/api.log --interval 0.5 --timestamp-format iso8601
+./bin/loggen logs/acme/log.txt --interval 0.7 --prefix "[acme] "
+./bin/loggen logs/beta/log.txt --interval 0.9 --prefix "[beta] "
 ```
 
-3. Run the viewer from the project directory:
+3. Start the viewer from the project directory (where `mlv.yaml` is):
 
 ```bash
-mlv
-# or: mlv --config /path/to/mlv.yaml
+./mlv.sh
 ```
 
 ## Configuration
@@ -81,7 +114,8 @@ See [docs/01_initial_user_interface.md](docs/01_initial_user_interface.md) for t
 Test utility that appends timestamped lines to a log file:
 
 ```bash
-loggen PATH [--interval SECONDS] [--prefix TEXT] [--count N] [--timestamp-format NAME]
+./bin/loggen PATH [--interval SECONDS] [--prefix TEXT] [--count N] [--timestamp-format NAME]
+# or: go run ./cmd/loggen PATH ...
 ```
 
 `--timestamp-format` (default `hms-ms`): `hms-ms`, `hms`, `iso8601`, `iso8601-t`, `utc-hms-ms`, or aliases `YYYY-MM-DD HH:mm:ss.SSS`, `YYYY-MM-DD HH:mm:ss`, `TIMESTAMP_ISO8601`. Formats without a timezone suffix are written as UTC (matching `line_pattern` parsers in `mlv.yaml`).

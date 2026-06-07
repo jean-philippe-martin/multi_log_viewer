@@ -7,6 +7,9 @@ The initial user interface will be intentionally limited, so we can experiment.
 On the left we show all the services, with their logs.
 There is a cursor so the user can navigate with up/down arrow (or k/j, vi-style). To the right of it is the main pane, where we show the content of log(s).
 
+The UI draws a rectangle on the screen, split with a vertical bar to separate the left pane from the main pane.
+Underneath this rectangle is the status line, by default showing which key does what.
+
 ## left pane
 
 Here is an example left pane:
@@ -29,7 +32,7 @@ log.txt, stdout.txt and stderr.txt are individual log files.
 Next to them is a vertical bar, the "log activity indicator".
 The bar fills 100% (this is just unicode so it has 8 degrees of fullness to choose from) when the log file changes, and then slowly empties over time. This gives a visual indication of which files are active.
 
-The ">" on the left indicates the user's cursor. Right now the cursor is on "api".
+The ">" on the left indicates the user's cursor. Right now the cursor is on "api". That row is also highlighted with a background color.
 
 The "|" on the right is the edge of the left pane. It's broken by a ">" symbol on the specific log that is being shown in the main pane right now. At this moment, the main pane shows the contents of the log.txt file of the "api" service.
 
@@ -121,4 +124,38 @@ For now we won't have a way to actually press the buttons, that's for later.
 ### showing both a service and one or more logs (future implementation)
 
 Then we mix the logs and the service's synthetic log, same rules as mixing multiple logs.
+
+### scrolling
+
+When the right pane has the focus, the user can press up/down or j/k to scroll up or down by one line, or PgUp/PgDn to scroll by a page, or Home/End (or g/G) to scroll all the way to the beginning/end.
+
+When the user starts to scroll, this pane no longer automatically scrolls when new lines are added in a log. Instead, the bottom line on the screen shows "Scroll to the bottom to resume auto-scroll.". When the user scrolls to the bottom, this text disappears and auto-scroll resumes.
+
+## focus
+
+There is a concept of "focus" Initially the focus is on the left pane, on whichever row the user cursor is on.
+
+For example here the focus is on the left pane, on "api" (indicated by the chevron on the left and a color change in that row).
+Note that the focus is different from which log is being watched. In this example "log.txt" is being watched (indicated by the chevron to its right)
+
+```
+>○  api              |
+   - log.txt         >
+ ● workers ▂         |
+
+```
+
+When the focus is on the left and the user presses the `right arrow` key, the focus moves to the main pane. The cursor (and its color highlight) disappear from the left pane. 
+
+Instead, the top line of the right rectangle that surrounds the main pane becomes a double line.
+
+ASCII art representation (do not copy this literally):
+```
++------+============+
+|      |            |
+|      |            |
+|      |            |
+|      |            |
++------+------------+
+```
 
