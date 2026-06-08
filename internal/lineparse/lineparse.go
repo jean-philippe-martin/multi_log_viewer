@@ -160,6 +160,9 @@ func (p *Pattern) Match(line string) (MatchResult, bool) {
 	return MatchResult{Fields: fields}, true
 }
 
+// parseTimestamp parses a captured timestamp string. ISO8601 values may use T or
+// a space, optional Z or numeric offsets, and fractional seconds; naive
+// values without a zone are interpreted as UTC.
 func parseTimestamp(typ fieldType, val string) (time.Time, error) {
 	switch typ {
 	case typeTimestampISO8601:

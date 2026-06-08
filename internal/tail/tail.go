@@ -139,6 +139,9 @@ func (f *File) readInitial() error {
 	return nil
 }
 
+// readTailChunk seeds the ring buffer from the end of a large file. It reads
+// the last 64 KB, discards the first partial line after the seek, then keeps
+// at most MaxLines.
 func (f *File) readTailChunk(size int64) error {
 	chunk := int64(65536)
 	if chunk > size {
@@ -194,6 +197,9 @@ func (f *File) consumeReader(r *bufio.Reader) error {
 	return nil
 }
 
+// readAppend reads only bytes written since the last read (from readOff).
+// If the file shrank (truncate/rotate), the buffer is cleared and tailing
+// restarts from the beginning via readInitial.
 func (f *File) readAppend() error {
 	info, err := os.Stat(f.Path)
 	if err != nil {
@@ -255,6 +261,8 @@ func (f *File) pushLineLocked(text string) {
 	}
 }
 
+// watchLoop waits for fsnotify events on the log file's directory and calls
+// readAppend when this file changes. Used when inotify/kqueue is available.
 func (f *File) watchLoop() {
 	for {
 		select {
@@ -272,6 +280,8 @@ func (f *File) watchLoop() {
 	}
 }
 
+// pollLoop periodically calls readAppend when fsnotify could not be started
+// (fallback for environments without a working file watcher).
 func (f *File) pollLoop() {
 	for {
 		select {

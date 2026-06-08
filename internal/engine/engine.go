@@ -224,6 +224,9 @@ func (e *Engine) attachLog(id, serviceID, abs, rel, folderKey, folderLabel strin
 	return nil
 }
 
+// rescanPatterns re-glob path_pattern log entries, attaches new files, and
+// stops tails for pattern-discovered logs that disappeared. Fixed path logs are
+// not removed here.
 func (e *Engine) rescanPatterns() {
 	for _, svc := range e.cfg.Services {
 		var want map[string]bool
@@ -482,6 +485,10 @@ func (e *Engine) MainView() MainViewState {
 	return mv
 }
 
+// buildMergedLines merges open logs for the main pane. Lines with parsed
+// timestamps are sorted across all open logs (ts, service, path, seq). Lines
+// without timestamps are included only when a single log is open; they are
+// omitted from multi-log merges.
 func (e *Engine) buildMergedLines() []MergedLine {
 	type item struct {
 		ts      time.Time
