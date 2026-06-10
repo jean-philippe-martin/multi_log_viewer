@@ -62,25 +62,28 @@ func renderSplitPane(sidebarText, mainText string, sideInner, mainInner, innerH 
 }
 
 func renderSplitTop(sideInner, mainInner int, leftFocused, mainFocused bool, leftTop, rightTop, border lipgloss.Style) string {
-	leftCorner, leftBar := "┌", "─"
-	rightCorner, rightBar := "┐", "─"
-	junction := "┬"
+	var left, junction, right string
 
-	if leftFocused {
-		leftCorner, leftBar = "╔", "═"
-		if mainFocused {
-			junction, rightCorner, rightBar = "╦", "╗", "═"
-		} else {
-			junction, rightCorner = "╤", "┐"
-		}
-	} else if mainFocused {
-		rightCorner, rightBar = "╗", "═"
-		junction = "╥"
+	switch {
+	case leftFocused && mainFocused:
+		left = leftTop.Render("╒" + strings.Repeat("═", sideInner))
+		junction = leftTop.Render("╦")
+		right = rightTop.Render(strings.Repeat("═", mainInner) + "╕")
+	case leftFocused:
+		left = leftTop.Render("╒" + strings.Repeat("═", sideInner))
+		junction = leftTop.Render("╕")
+		right = border.Render(strings.Repeat("─", mainInner) + "┐")
+	case mainFocused:
+		left = border.Render("┌" + strings.Repeat("─", sideInner))
+		junction = rightTop.Render("╒")
+		right = rightTop.Render(strings.Repeat("═", mainInner) + "╕")
+	default:
+		left = border.Render("┌" + strings.Repeat("─", sideInner))
+		junction = border.Render("┬")
+		right = border.Render(strings.Repeat("─", mainInner) + "┐")
 	}
 
-	left := leftTop.Render(leftCorner + strings.Repeat(leftBar, sideInner))
-	right := rightTop.Render(strings.Repeat(rightBar, mainInner) + rightCorner)
-	return left + border.Render(junction) + right
+	return left + junction + right
 }
 
 func renderSplitBottom(sideInner, mainInner int, border lipgloss.Style) string {

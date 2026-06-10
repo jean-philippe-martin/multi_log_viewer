@@ -164,22 +164,22 @@ Instead, the top line of the right rectangle that surrounds the main pane become
 
 ASCII art representation (do not copy this literally):
 ```
-+------+============+
-|      |            |
-|      |            |
-|      |            |
-|      |            |
-+------+------------+
+┌──────╒════════════╕
+│      │            │
+│      │            │
+│      │            │
+│      │            │
+└──────┴────────────┘
 ```
 
 When the focus is on the left then it's the left half that has the double lines at the top.
 ```
-+======+------------+
-|      |            |
-|      |            |
-|      |            |
-|      |            |
-+------+------------+
+╒══════╕────────────┐
+│      │            │
+│      │            │
+│      │            │
+│      │            │
+└──────┴────────────┘
 ```
 
 We use a single vertical line to separate the two panels; it's not the case that each panel has its own rectangle.

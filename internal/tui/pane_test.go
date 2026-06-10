@@ -86,10 +86,26 @@ selected_top_border: "252"
 	leftTop := th.TopBorderFgStyle(true)
 	rightTop := th.TopBorderFgStyle(false)
 	top := ansi.Strip(renderSplitTop(4, 5, true, false, leftTop, rightTop, border))
-	if !strings.HasPrefix(top, "╔") {
-		t.Fatalf("top=%q", top)
+	want := "╒════╕─────┐"
+	if top != want {
+		t.Fatalf("top=%q want %q", top, want)
 	}
-	if !strings.Contains(top, "╤") {
-		t.Fatalf("expected mixed junction, top=%q", top)
+}
+
+func TestRenderSplitTopDoubleWhenMainFocused(t *testing.T) {
+	th, err := theme.Parse([]byte(`
+border: "240"
+selected_top_border: "252"
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	border := th.BorderFgStyle()
+	leftTop := th.TopBorderFgStyle(false)
+	rightTop := th.TopBorderFgStyle(true)
+	top := ansi.Strip(renderSplitTop(4, 5, false, true, leftTop, rightTop, border))
+	want := "┌────╒═════╕"
+	if top != want {
+		t.Fatalf("top=%q want %q", top, want)
 	}
 }
