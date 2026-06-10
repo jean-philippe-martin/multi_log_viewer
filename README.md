@@ -24,6 +24,24 @@ go build -o bin/loggen ./cmd/loggen
 
 ## Install
 
+### Download a release
+
+1. Open [GitHub Releases](https://github.com/jpmartin/multi_log_viewer/releases) and download the archive for your OS/arch (e.g. `multi_log_viewer_0.1.0_darwin_arm64.tar.gz`).
+2. Extract it and copy `mlv.yaml` (and optional `themes/`) into the directory where you will run the viewer.
+3. Run:
+
+```bash
+chmod +x mlv
+./mlv
+```
+
+Verify the build:
+
+```bash
+./mlv --version
+```
+
+### Build from source
 
 (then `mlv` works from any directory if `mlv.yaml` is in that directory):
 
@@ -37,6 +55,22 @@ Ensure `$(go env GOPATH)/bin` is on your PATH (often `~/go/bin`):
 ```bash
 export PATH="$(go env GOPATH)/bin:$PATH"
 mlv
+```
+
+### Publish a release (maintainers)
+
+Tag and push a semver tag; GitHub Actions runs GoReleaser and uploads binaries:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Dry-run locally before tagging:
+
+```bash
+goreleaser build --snapshot --clean
+ls dist/
 ```
 
 Custom config path:

@@ -54,3 +54,13 @@ Pass extra arguments to `go test`:
 ```bash
 ./run-tests.sh -v -run TestLoadValid
 ```
+
+## Releases
+
+GoReleaser config: `.goreleaser.yaml`. Pushing a `v*` tag triggers `.github/workflows/release.yml`.
+
+```bash
+goreleaser build --snapshot --clean   # local dry-run → dist/
+git tag v0.1.0
+git push origin v0.1.0                # publishes GitHub release
+```
