@@ -16,7 +16,7 @@ func TestClipLinesTail(t *testing.T) {
 
 func TestMainViewportAutoScroll(t *testing.T) {
 	lines := []string{"a", "b", "c", "d", "e"}
-	got, hint := mainViewport(lines, 3, true, 0)
+	got, hint := visibleMainLines(lines, 3, true, 0)
 	want := "c\nd\ne"
 	if strings.Join(got, "\n") != want || hint {
 		t.Fatalf("got %v hint=%v", got, hint)
@@ -25,7 +25,7 @@ func TestMainViewportAutoScroll(t *testing.T) {
 
 func TestMainViewportScrolledUp(t *testing.T) {
 	lines := []string{"a", "b", "c", "d", "e"}
-	got, hint := mainViewport(lines, 3, false, 1)
+	got, hint := visibleMainLines(lines, 3, false, 1)
 	want := "b\nc"
 	if strings.Join(got, "\n") != want || !hint {
 		t.Fatalf("got %v hint=%v", got, hint)
@@ -34,9 +34,9 @@ func TestMainViewportScrolledUp(t *testing.T) {
 
 func TestMainViewportPausesWhenLinesGrow(t *testing.T) {
 	lines := []string{"a", "b", "c", "d", "e"}
-	got1, _ := mainViewport(lines, 3, false, 1)
+	got1, _ := visibleMainLines(lines, 3, false, 1)
 	lines = append(lines, "f", "g", "h")
-	got2, hint := mainViewport(lines, 3, false, 1)
+	got2, hint := visibleMainLines(lines, 3, false, 1)
 	if strings.Join(got1, "\n") != strings.Join(got2, "\n") {
 		t.Fatalf("view shifted on append: %v -> %v", got1, got2)
 	}
@@ -47,9 +47,9 @@ func TestMainViewportPausesWhenLinesGrow(t *testing.T) {
 
 func TestMainViewportAutoScrollFollowsGrowth(t *testing.T) {
 	lines := []string{"a", "b", "c"}
-	got1, _ := mainViewport(lines, 2, true, 0)
+	got1, _ := visibleMainLines(lines, 2, true, 0)
 	lines = append(lines, "d", "e")
-	got2, _ := mainViewport(lines, 2, true, 0)
+	got2, _ := visibleMainLines(lines, 2, true, 0)
 	if strings.Join(got1, "\n") == strings.Join(got2, "\n") {
 		t.Fatalf("auto-scroll should follow tail: %v", got2)
 	}

@@ -28,8 +28,9 @@ type model struct {
 	width         int
 	height        int
 	focus         focusPane
-	autoScroll bool
-	viewStart  int
+	autoScroll          bool
+	viewStart           int
+	frozenDisplayLines  []string // snapshot taken when auto-scroll pauses; not refreshed until resume
 }
 
 func initColorProfile() {
@@ -94,6 +95,8 @@ func (m model) mainContentH(paneH int) int {
 	return innerH
 }
 
+// buildMainLines reads the current engine state, wraps log text to mainW columns,
+// and returns styled strings ready to paint (one entry per terminal row).
 func (m model) buildMainLines(mainW, paneH int) []string {
 	mv := m.eng.MainView()
 	logStyle := m.th.LogText.Lipgloss()
@@ -123,6 +126,28 @@ func (m model) buildMainLines(mainW, paneH int) []string {
 	return out
 }
 
+// mainDisplayLines returns the line slice used for scrolling and rendering.
+// While auto-scroll is on, lines are rebuilt from the live tail on every call.
+// While paused, the frozen snapshot taken at pause time is returned instead.
+func (m model) mainDisplayLines(mainW, paneH int) []string {
+	if !m.autoScroll && m.frozenDisplayLines != nil {
+		return m.frozenDisplayLines
+	}
+	return m.buildMainLines(mainW, paneH)
+}
+
+func (m model) pauseAutoScroll(mainW, paneH int) model {
+	m.frozenDisplayLines = append([]string(nil), m.buildMainLines(mainW, paneH)...)
+	return m
+}
+
+func (m model) resumeAutoScroll() model {
+	m.autoScroll = true
+	m.viewStart = 0
+	m.frozenDisplayLines = nil
+	return m
+}
+
 func styleWrappedLines(lines []string, width int, style lipgloss.Style) []string {
 	wrapped := flattenWrappedLines(lines, width)
 	for i, ln := range wrapped {
@@ -132,15 +157,20 @@ func styleWrappedLines(lines []string, width int, style lipgloss.Style) []string
 }
 
 func (m model) scrollUp(n, paneH int) model {
-	lines := m.buildMainLines(m.mainContentWidth(), paneH)
-	if len(lines) == 0 {
-		return m
-	}
+	mainW := m.mainContentWidth()
 	innerH := m.mainInnerH(paneH)
 	if m.autoScroll {
-		m.viewStart = maxViewStart(len(lines), innerH) - n
+		m = m.pauseAutoScroll(mainW, paneH)
+		if len(m.frozenDisplayLines) == 0 {
+			return m
+		}
 		m.autoScroll = false
+		m.viewStart = maxViewStart(len(m.frozenDisplayLines), innerH) - n
 	} else {
+		lines := m.mainDisplayLines(mainW, paneH)
+		if len(lines) == 0 {
+			return m
+		}
 		m.viewStart -= n
 		maxStart := maxViewStart(len(lines), m.mainContentH(paneH))
 		if m.viewStart > maxStart {
@@ -154,7 +184,7 @@ func (m model) scrollUp(n, paneH int) model {
 }
 
 func (m model) scrollDown(n, paneH int) model {
-	lines := m.buildMainLines(m.mainContentWidth(), paneH)
+	lines := m.mainDisplayLines(m.mainContentWidth(), paneH)
 	if len(lines) == 0 {
 		return m
 	}
@@ -162,14 +192,15 @@ func (m model) scrollDown(n, paneH int) model {
 	m.viewStart += n
 	maxStart := maxViewStart(len(lines), contentH)
 	if m.viewStart >= maxStart {
-		m.viewStart = maxStart
-		m.autoScroll = true
+		m = m.resumeAutoScroll()
 	}
 	return m
 }
 
 func (m model) scrollToTop(paneH int) model {
-	if len(m.buildMainLines(m.mainContentWidth(), paneH)) == 0 {
+	mainW := m.mainContentWidth()
+	m = m.pauseAutoScroll(mainW, paneH)
+	if len(m.frozenDisplayLines) == 0 {
 		return m
 	}
 	m.autoScroll = false
@@ -178,9 +209,7 @@ func (m model) scrollToTop(paneH int) model {
 }
 
 func (m model) scrollToBottom() model {
-	m.autoScroll = true
-	m.viewStart = 0
-	return m
+	return m.resumeAutoScroll()
 }
 
 func (m model) mainContentWidth() int {
@@ -257,12 +286,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			m.eng.HandleKey(engine.KeyEnter)
-			m.autoScroll = true
-			m.viewStart = 0
+			m = m.resumeAutoScroll()
 		case "+":
 			m.eng.HandleKey(engine.KeyAdd)
-			m.autoScroll = true
-			m.viewStart = 0
+			m = m.resumeAutoScroll()
 		case "-":
 			m.eng.HandleKey(engine.KeyRemove)
 		}
@@ -323,8 +350,8 @@ func (m model) renderMainContent(mainInner, innerH int) string {
 		return padLines(m.th.MutedStyle().Render("(no selection — press Enter on a log or service)"), innerH)
 	}
 
-	allLines := m.buildMainLines(mainInner, m.paneHeight())
-	visible, showHint := mainViewport(allLines, innerH, m.autoScroll, m.viewStart)
+	displayLines := m.mainDisplayLines(mainInner, m.paneHeight())
+	visible, showHint := visibleMainLines(displayLines, innerH, m.autoScroll, m.viewStart)
 	text := strings.Join(visible, "\n")
 	if showHint {
 		hint := scrollHint

@@ -69,41 +69,43 @@ func maxViewStart(total, contentH int) int {
 	return total - contentH
 }
 
-// mainViewport picks visible display lines and whether to show the scroll hint.
-// viewStart is the first visible line index when autoScroll is false.
-func mainViewport(lines []string, visible int, autoScroll bool, viewStart int) ([]string, bool) {
-	total := len(lines)
-	if visible < 1 {
-		visible = 1
+// visibleMainLines returns the slice of displayLines to paint in the main pane,
+// and whether the paused-auto-scroll hint should occupy the bottom row.
+// displayLines is either live tail content (auto-scroll) or a frozen snapshot (paused).
+func visibleMainLines(displayLines []string, paneLines int, followTail bool, viewStart int) ([]string, bool) {
+	if paneLines < 1 {
+		paneLines = 1
 	}
-	contentH := visible
-	var start int
-	if autoScroll {
-		start = maxViewStart(total, contentH)
-	} else {
-		contentH = visible - 1
-		if contentH < 1 {
-			contentH = 1
-		}
-		start = viewStart
-		maxStart := maxViewStart(total, contentH)
-		if start > maxStart {
-			start = maxStart
-		}
-		if start < 0 {
-			start = 0
+
+	contentLines := paneLines
+	if !followTail {
+		contentLines = paneLines - 1 // reserve bottom row for scroll hint
+		if contentLines < 1 {
+			contentLines = 1
 		}
 	}
-	showHint := !autoScroll && start < maxViewStart(total, contentH)
-	end := start + contentH
+
+	total := len(displayLines)
+	start := viewStart
+	if followTail {
+		start = maxViewStart(total, contentLines)
+	} else if start < 0 {
+		start = 0
+	} else if start > maxViewStart(total, contentLines) {
+		start = maxViewStart(total, contentLines)
+	}
+
+	end := start + contentLines
 	if end > total {
 		end = total
 	}
-	out := append([]string(nil), lines[start:end]...)
-	for len(out) < contentH {
-		out = append(out, "")
+	visible := append([]string(nil), displayLines[start:end]...)
+	for len(visible) < contentLines {
+		visible = append(visible, "")
 	}
-	return out, showHint
+
+	showHint := !followTail && start < maxViewStart(total, contentLines)
+	return visible, showHint
 }
 
 // viewportStart picks the first visible sidebar row so the cursor stays in view.
